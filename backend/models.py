@@ -14,6 +14,11 @@ class Course(BaseModel):
     instructor: Optional[str] = None  # Course instructor name (optional metadata)
     lessons: List[Lesson] = [] # List of lessons in this course
 
+class SourceItem(BaseModel):
+    """Represents a source with optional URL"""
+    label: str
+    url: Optional[str] = None
+
 class CourseChunk(BaseModel):
     """Represents a text chunk from a course for vector storage"""
     content: str                        # The actual text content

@@ -5,7 +5,7 @@ const API_URL = '/api';
 let currentSessionId = null;
 
 // DOM elements
-let chatMessages, chatInput, sendButton, totalCourses, courseTitles;
+let chatMessages, chatInput, sendButton, totalCourses, courseTitles, clearChatButton;
 
 // Initialize
 document.addEventListener('DOMContentLoaded', () => {
@@ -15,7 +15,8 @@ document.addEventListener('DOMContentLoaded', () => {
     sendButton = document.getElementById('sendButton');
     totalCourses = document.getElementById('totalCourses');
     courseTitles = document.getElementById('courseTitles');
-    
+    clearChatButton = document.getElementById('clearChatButton');
+
     setupEventListeners();
     createNewSession();
     loadCourseStats();
@@ -30,6 +31,9 @@ function setupEventListeners() {
     });
     
     
+    // Clear chat
+    clearChatButton.addEventListener('click', clearChat);
+
     // Suggested questions
     document.querySelectorAll('.suggested-item').forEach(button => {
         button.addEventListener('click', (e) => {
@@ -125,7 +129,7 @@ function addMessage(content, type, sources = null, isWelcome = false) {
         html += `
             <details class="sources-collapsible">
                 <summary class="sources-header">Sources</summary>
-                <div class="sources-content">${sources.join(', ')}</div>
+                <ul class="sources-content">${sources.map(s => `<li>${s.url ? `<a href="${s.url}" target="_blank" rel="noopener noreferrer">${s.label}</a>` : s.label}</li>`).join('')}</ul>
             </details>
         `;
     }
@@ -145,6 +149,17 @@ function escapeHtml(text) {
 }
 
 // Removed removeMessage function - no longer needed since we handle loading differently
+
+async function clearChat() {
+    if (currentSessionId) {
+        await fetch(`${API_URL}/clear-session`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ session_id: currentSessionId })
+        });
+    }
+    createNewSession();
+}
 
 async function createNewSession() {
     currentSessionId = null;
