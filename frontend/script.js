@@ -5,7 +5,7 @@ const API_URL = '/api';
 let currentSessionId = null;
 
 // DOM elements
-let chatMessages, chatInput, sendButton, totalCourses, courseTitles, clearChatButton;
+let chatMessages, chatInput, sendButton, totalCourses, courseTitles, clearChatButton, themeToggle;
 
 // Initialize
 document.addEventListener('DOMContentLoaded', () => {
@@ -16,14 +16,59 @@ document.addEventListener('DOMContentLoaded', () => {
   totalCourses = document.getElementById('totalCourses');
   courseTitles = document.getElementById('courseTitles');
   clearChatButton = document.getElementById('clearChatButton');
+  themeToggle = document.getElementById('themeToggle');
 
+  initTheme();
   setupEventListeners();
   createNewSession();
   loadCourseStats();
 });
 
+// Theme Functions
+function applyTheme(theme, animate) {
+    if (animate) {
+        document.body.classList.add('theme-transitioning');
+        setTimeout(() => document.body.classList.remove('theme-transitioning'), 350);
+    }
+    if (theme === 'light') {
+        document.body.setAttribute('data-theme', 'light');
+    } else {
+        document.body.removeAttribute('data-theme');
+    }
+}
+
+function initTheme() {
+    const saved = localStorage.getItem('theme');
+    if (saved) {
+        applyTheme(saved, false);
+    } else if (window.matchMedia('(prefers-color-scheme: light)').matches) {
+        applyTheme('light', false);
+    }
+
+    // Keep in sync with OS preference when user hasn't set a manual override
+    window.matchMedia('(prefers-color-scheme: light)').addEventListener('change', (e) => {
+        if (!localStorage.getItem('theme')) {
+            applyTheme(e.matches ? 'light' : 'dark', true);
+        }
+    });
+}
+
+function toggleTheme() {
+    const isLight = document.body.getAttribute('data-theme') === 'light';
+    const next = isLight ? 'dark' : 'light';
+    applyTheme(next, true);
+    localStorage.setItem('theme', next);
+    themeToggle.classList.add('theme-toggle--spin');
+    themeToggle.addEventListener('animationend', () => {
+        themeToggle.classList.remove('theme-toggle--spin');
+    }, { once: true });
+}
+
 // Event Listeners
 function setupEventListeners() {
+  // Theme toggle
+  themeToggle.addEventListener('click', toggleTheme);
+
   // Chat functionality
   sendButton.addEventListener('click', sendMessage);
   chatInput.addEventListener('keypress', (e) => {
